@@ -1,71 +1,59 @@
 """
   Udacity CS253 - Lesson 2 - Homework 2
 """
-import webapp2
+import webapp2, jinja2, os, re
 
-class LoginPage(webapp2.RequestHandler):
-  base = """
-  <!DOCTYPE html>
-  <html>
-  <head>
-  <title>Login</title>
-  <style type="text/css">
-  .label {text-align: right;}
-  .error {color: red;}
-  </style>
-  </head>
-  <body>
-  <h2>Signup</h2>
-  <form method="POST">
-  <table>
-  <tr>
-  <td class="label">Username</td>
-  <td><input type="text" name="username" value="%(username)s"></td>
-  <td class="error">%(username_error)s</td>
-  </tr>
-  <tr>
-  <td class="label">Password</td>
-  <td><input type="password" name="password" value=""></td>
-  <td class="error">%(password_error)s</td>
-  </tr>
-  <tr>
-  <td class="label">Verify Password</td>
-  <td><input type="password" name="verify" value=""></td>
-  <td class="error">%(verify_error)s</td>
-  </tr>
-  <tr>
-  <td class="label">Email (optional)</td>
-  <td><input type="text" name="email" value="%(email)s"></td>
-  <td class="error">%(email_error)s</td>
-  </tr>
-  </table>
-  <input type="submit">
-  </form>
-  </body>
-  </html>
-  """
-  def __check_username(usrname):
-    
-  def __draw_form(self, username='', email='', username_error='', password_error='', verify_error='', email_error=''):
-    self.response.write(self.base % {'username': username, 'email': email, 'username_error': username_error, 'password_error': password_error, 'verify_error': verify_error, 'email_error': email_error})
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape = True)
+def render_temp(template, **params):
+  t = jinja_env.get_template(template)
+  return t.render(params)
+
+RE_USER = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+RE_PASS = re.compile(r"^.{3,20}$")
+RE_EMAIL = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+def validate_username(username):
+  return username and RE_USER.match(username)
+def validate_password(password):
+  return password and RE_PASS.match(password)
+def validate_email(email):
+  return not email or RE_EMAIL.match(email)
+
+class BaseHandler(webapp2.RequestHandler):
+  def render(self, template, **params):
+    self.response.out.write(render_temp(template, **params))
+  def write(self, *a, **kw):
+    self.response.out.write(*a, **kw)
+
+class LoginPage(BaseHandler):
   def get(self):
-    self.__draw_form()
+    self.render('signup.html')
   def post(self):
-    self.redirect('/welcome')
+    username, password, verify, email = self.request.get('username'), self.request.get('password'), self.request.get('verify'), self.request.get('email')
+    params, error = {'username': username, 'email': email}, False
+    if not validate_username(username):
+      params['error_username'] = 'That\'s not a valid username.'
+      error = True
+    if not validate_password(password):
+      params['error_password'] = 'That wasn\'t a valid password.'
+      error = True
+    elif password != verify:
+      params['error_verify'] = 'Your passwords didn\'t match.'
+      error = True
+    if not validate_email(email):
+      params['error_email'] =  'That\'s not a valid email.'
+      error = True
+    if error:
+      self.render('signup.html', **params)
+    else:
+      self.redirect('welcome.html?username=%s' % username)
 
-class WelcomePage(webapp2.RequestHandler):
-  base = """
-  <!DOCTYPE html>
-  <html>
-  <head>
-  <title>Welcome</title>
-  </head>
-  <body>
-  <h2>Welcome %(username)s</h2>
-  </body>
-  </html>
-  """
+class WelcomePage(BaseHandler):
   def get(self):
-    self.response.write(self.base % {'username': self.request.get('username')})
+    username = self.request.get('username')
+    if valid_username(username):
+      self.render('welcome.html', username = username)
+    else:
+      self.redirect('/')
 
 app = webapp2.WSGIApplication([('/', LoginPage), ('/welcome', WelcomePage)], debug=True)

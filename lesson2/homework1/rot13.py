@@ -14,9 +14,6 @@ class BaseHandler(webapp2.RequestHandler):
   def render(self, template, **params):
     self.response.out.write(render_temp(template, **params))
 
-  def write(self, *a, **kw):
-    self.response.out.write(*a, **kw)
-
 class Rot13Page(BaseHandler):
   def get(self):
     self.render('form.html')
