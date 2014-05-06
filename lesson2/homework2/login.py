@@ -21,9 +21,8 @@ def validate_email(email):
 
 class BaseHandler(webapp2.RequestHandler):
   def render(self, template, **params):
+    self.response.headers['Content-Type'] = "text/html; charset=utf-8"
     self.response.out.write(render_temp(template, **params))
-  def write(self, *a, **kw):
-    self.response.out.write(*a, **kw)
 
 class LoginPage(BaseHandler):
   def get(self):
@@ -46,12 +45,12 @@ class LoginPage(BaseHandler):
     if error:
       self.render('signup.html', **params)
     else:
-      self.redirect('welcome.html?username=%s' % username)
+      self.redirect('/welcome?username=%s' % username)
 
 class WelcomePage(BaseHandler):
   def get(self):
     username = self.request.get('username')
-    if valid_username(username):
+    if validate_username(username):
       self.render('welcome.html', username = username)
     else:
       self.redirect('/')
