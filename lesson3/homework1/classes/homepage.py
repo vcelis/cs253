@@ -8,7 +8,6 @@ from google.appengine.ext import db
 
 class HomePage(basehandler.BaseHandler):
   def get(self, idx=''):
-    #test = post.Post.get_by_id(int(idx))
     if idx and not post.Post.get_by_id(int(idx)):
       self.error(404)
       return

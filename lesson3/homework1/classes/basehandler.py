@@ -1,5 +1,5 @@
 """
-  Abstract base class to he inherited by the page handler classes
+  Abstract base class to be inherited by the page handler classes
 """
 import webapp2, jinja2, os
 class BaseHandler(webapp2.RequestHandler):
