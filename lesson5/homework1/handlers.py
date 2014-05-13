@@ -22,6 +22,7 @@ class BaseHandler(webapp2.RequestHandler):
       u = User.get_id(c.split('|')[0])
       return u
 
+
 class FormHandler():
   RE_USERNAME = re.compile(r'^[a-zA-Z0-9_-]{3,20}$')
   RE_PASSWORD = re.compile(r'^.{3,20}$')
@@ -95,12 +96,12 @@ class NewPostPage(BaseHandler, FormHandler):
 class JsonPage(BaseHandler):
   def get(self, idx=''):
     if idx:
-      r = Post.get_id(int(idx)).as_json()
+      r = Post.get_id(int(idx)).as_dict()
     else:
-      r = [x.as_json() for x in Post.get_all()]
+      r = [x.as_dict() for x in Post.get_all()]
     p = Post.get_id(int(idx)) if idx else Post.get_all()
     self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
-    self.response.out.write(r)
+    self.response.out.write(json.dumps(r))
 
 ######### User #########
 class SignupPage(BaseHandler, FormHandler):
@@ -150,5 +151,5 @@ class WelcomePage(BaseHandler):
       params = {'username': u.name}
       self.render('welcome.html', **params)
     else:
-      params = {'error_login': 'A security error occured. Please login again.'}
-      self.render('login.html', **params)
+      self.del_cookie('uid')
+      self.redirect('/login')
