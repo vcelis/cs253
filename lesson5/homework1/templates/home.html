@@ -18,8 +18,8 @@
       {% for post in posts %}
       <div class="post">
         <div class="post-heading">
-          <a href="/{{post.key().id()}}" class="post-title">{{post.title}}</a>
-          <div class="post-date">{{post.time.date()}}</div>
+          <a href="/{{post.key().id()}}" class="post-title">{{post.subject}}</a>
+          <div class="post-date">{{post.last_modified.date()}}</div>
         </div>
         <pre class="post-content">{{post.content}}</pre>
       </div>

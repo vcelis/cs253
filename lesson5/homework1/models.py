@@ -42,3 +42,33 @@ class User(db.Model):
   def login(cls, name, pw):
     u = User.get_name(name)
     return u if u and u.pw == User.gen_pw_hash(name, pw, u.pw.split('|')[0]) else None
+
+class Post(db.Model):
+  subject = db.StringProperty(required=True)
+  content = db.TextProperty(required=True)
+  created = db.DateTimeProperty(auto_now_add=True)
+  last_modified = db.DateTimeProperty(auto_now=True)
+
+  def as_json(self):
+    return dict(
+      subject=self.subject,
+      content=self.content,
+      created=self.created.strftime(r'%a %b %e %H:%M:%S %Y'),
+      last_modified=self.last_modified.strftime(r'%a %b %e %H:%M:%S %Y')
+      )
+
+  @staticmethod
+  def get_key(group='default'):
+    return db.Key.from_path('posts', group)
+  @classmethod
+  def get_id(cls, idx):
+    return Post.get_by_id(idx, parent = Post.get_key())
+  @classmethod
+  def get_last(cls, i):
+    return db.GqlQuery('SELECT * FROM Post ORDER BY time DESC LIMIT %d' % i)
+  @classmethod
+  def get_all(cls):
+    return db.GqlQuery('SELECT * FROM Post')
+  @classmethod
+  def create(cls, subject, content):
+    return cls(parent = Post.get_key(), subject=subject, content=content)

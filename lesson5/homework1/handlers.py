@@ -1,8 +1,8 @@
 """
   Classes to handle the requests
 """
-import webapp2, jinja2, os, re
-from models import User
+import webapp2, jinja2, os, re, json
+from models import User, Post
 """
   Abstract handler classes
 """
@@ -69,9 +69,13 @@ class FormHandler():
 """
 ######### Blog #########
 class HomePage(BaseHandler):
-  def get(self):
+  def get(self, idx=''):
     u = self.check_login()
     params = { 'user': u }
+    if idx and not Post.get_id(int(idx)):
+      self.error(404)
+      return
+    params['posts'] = [Post.get_id(int(idx))] if idx else Post.get_last(10)
     self.render('home.html', **params)
 
 class NewPostPage(BaseHandler, FormHandler):
@@ -86,6 +90,17 @@ class NewPostPage(BaseHandler, FormHandler):
       p = Post.create(raw['subject'], raw['content'])
       p.put()
       self.redirect('/%s' % p.key().id())
+
+### JSON ###
+class JsonPage(BaseHandler):
+  def get(self, idx=''):
+    if idx:
+      r = Post.get_id(int(idx)).as_json()
+    else:
+      r = [x.as_json() for x in Post.get_all()]
+    p = Post.get_id(int(idx)) if idx else Post.get_all()
+    self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    self.response.out.write(r)
 
 ######### User #########
 class SignupPage(BaseHandler, FormHandler):

@@ -9,5 +9,8 @@ app = webapp2.WSGIApplication([
   ('/signup', handlers.SignupPage),
   ('/login', handlers.LoginPage),
   ('/logout', handlers.LogoutPage),
-  ('/welcome', handlers.WelcomePage)
+  ('/welcome', handlers.WelcomePage),
+  ('/.json', handlers.JsonPage),
+  (r'/(\d+)\.json', handlers.JsonPage),
+  (r'/(\d+)', handlers.HomePage)
   ], debug=True)
