@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Signup{% endblock %}
+{% block head %}{% endblock %}
+{% block body %}
+    <a href="/" class="main-title">
+      Blog {{id}}
+    </a>
+    <div class="login-area">
+      {% if user %}
+        {{user.name}} (<a href="/logout" class="login-link">logout</a>)
+      {% else %}
+        <a href="/login" class="login-link">login</a>
+        |
+        <a href="/signup" class="login-link">signup</a>
+      {% endif %}
+    </div>
+    <div id="content">
+      {% for post in posts %}
+      <div class="post">
+        <div class="post-heading">
+          <a href="/{{post.key().id()}}" class="post-title">{{post.subject}}</a>
+          <div class="post-date">{{post.last_modified.date()}}</div>
+        </div>
+        <pre class="post-content">{{post.content}}</pre>
+      </div>
+      <br><br>
+      {% endfor %}
+      <div class="age">{{age}}</div>
+    </div>
+{% endblock %}
